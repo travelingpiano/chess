@@ -1,9 +1,18 @@
 require "colorize"
 require_relative "board"
 require_relative "cursor"
+require "byebug"
 
 class Display
   attr_accessor :cursor, :board
+
+  SYMBOLS = {"Knight" => "\u2658",
+            "King" => "\u2654",
+            "Queen" => "\u2655",
+            "Rook" => "\u2656",
+            "Bishop" => "\u2657",
+            "Pawn" => "\u2659"}
+
   def initialize(board)
     @cursor = Cursor.new([0,0],board)
     @board = board
@@ -27,9 +36,13 @@ class Display
         if board[[x,y]].is_a?(NullPiece)
           symbol = "   "
         else
-          symbol = "\u2654"
+          symbol = Display::SYMBOLS[board[[x,y]].class.to_s]
           symbol = " " + symbol.encode('utf-8') + " "
-          fg_color = :blue
+          if board[[x,y]].name == "player1"
+            fg_color = :blue
+          else
+            fg_color = :black
+          end
         end
         print symbol.colorize(:color => fg_color, :background => bg_color)
       end
@@ -40,8 +53,30 @@ end
 
 b = Board.new
 d = Display.new(b)
+toggle = 0
+start_pos = []
+end_pos = []
+selected_piece = []
 while true
   d.render
-  d.cursor.get_input
-  system("clear")
+  start_pos = d.cursor.get_input
+  p start_pos
+  p toggle
+  if start_pos
+    if toggle%2 == 0
+      selected_piece = b[start_pos]
+    else
+      end_pos = start_pos
+      if selected_piece.valid_moves.include?(end_pos)
+        b[end_pos] = b[start_pos]
+        b[end_pos].pos = end_pos
+        b[start_pos] = NullPiece.instance
+
+      end
+    end
+    toggle += 1
+    toggle = toggle%2
+  end
+
+  #system("clear")
 end

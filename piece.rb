@@ -7,6 +7,23 @@ class Piece
     @name = player_name
   end
 
+  def valid_moves
+    moves(nil,pos,board,name).reject{|move| move_into_check?(move)}
+  end
+
+  def moves(dir,pos,board,name)
+    puts "piece move method"
+  end
+
+  def move_into_check?(end_pos)
+    duplicate_board = board.dup
+
+    duplicate_board[end_pos] = duplicate_board[pos]
+    duplicate_board[pos] = NullPiece.instance
+    duplicate_board[end_pos].pos = end_pos
+    duplicate_board.in_check?(name)
+  end
+
 end
 
 module SteppingPiece
@@ -26,7 +43,7 @@ module SteppingPiece
                 [-1,1],
                 [-1,0],
                 [-1,-1]]
-  def moves(pos,board,player_name)
+  def moves(dirs,pos,board,player_name)
     pos_comb = []
     if board[pos].is_a?(King)
       pos_comb = KING_MOVES
@@ -153,7 +170,7 @@ class King < Piece
 end
 
 class Pawn < Piece
-  def moves
+  def moves(dirs,pos,board,player_name)
     new_positions = []
     new_pos = []
     if name == "player1"
@@ -166,11 +183,15 @@ class Pawn < Piece
       new_positions << new_pos
     end
     new_pos = [[pos[0]+delta,pos[1]+1],[pos[0]+delta,pos[1]-1]]
-    if board[new_pos[0]].name != name && board[new_pos[0]].name
-      new_positions << new_pos[0]
+    unless new_pos[0][0] < 0 || new_pos[0][0] > 7 || new_pos[0][1] < 0 || new_pos[0][1] > 7
+      if board[new_pos[0]].name != name && board[new_pos[0]].name
+        new_positions << new_pos[0]
+      end
     end
-    if board[new_pos[1]].name != name && board[new_pos[1]].name
-      new_positions << new_pos[1]
+    unless new_pos[1][0] < 0 || new_pos[1][0] > 7 || new_pos[1][1] < 0 || new_pos[1][1] > 7
+      if board[new_pos[1]].name != name && board[new_pos[1]].name
+        new_positions << new_pos[1]
+      end
     end
     new_pos = [pos[0]+delta+delta,pos[1]]
     if name == "player1" && pos[0]==1 && board[new_pos].is_a?(NullPiece) \
