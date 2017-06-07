@@ -1,5 +1,6 @@
 require "colorize"
 require_relative "board"
+require_relative "piece"
 require_relative "cursor"
 require "byebug"
 
@@ -59,24 +60,28 @@ end_pos = []
 selected_piece = []
 while true
   d.render
-  start_pos = d.cursor.get_input
+  current_pos = d.cursor.get_input
   p start_pos
   p toggle
-  if start_pos
+  if current_pos
     if toggle%2 == 0
+      start_pos = current_pos
       selected_piece = b[start_pos]
+      toggle = 1 if selected_piece.class == NullPiece
     else
-      end_pos = start_pos
+      end_pos = current_pos
       if selected_piece.valid_moves.include?(end_pos)
-        b[end_pos] = b[start_pos]
-        b[end_pos].pos = end_pos
-        b[start_pos] = NullPiece.instance
+        player = selected_piece.name
+        piece_class = selected_piece.class
 
+        b[end_pos] = piece_class.new(end_pos,b,player)
+        start_pos = selected_piece.pos
+        b[start_pos] = NullPiece.instance
       end
     end
     toggle += 1
     toggle = toggle%2
   end
 
-  #system("clear")
+  system("clear")
 end
